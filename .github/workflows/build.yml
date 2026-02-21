@@ -1,0 +1,31 @@
+name: Build Outer (WOXOS Nova)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build buildenv -t myos-buildenv
+
+      - name: Build OS inside container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/root/env \
+            myos-buildenv \
+            make build-x86_64
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: outer-x86_64-iso
+          path: dist/x86_64/kernel.iso
