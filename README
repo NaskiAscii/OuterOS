@@ -1,1 +1,24 @@
 An operating system by two idiots who don't know what they are doing.
+
+1. How to build it:
+
+If it's not on actions:
+
+Make the docker container:
+
+docker build buildenv -t myos-buildenv
+
+Run the docker container:
+
+Linux or MacOS: docker run --rm -it -v "$(pwd)":/root/env myos-buildenv
+Windows (CMD): docker run --rm -it -v "%cd%":/root/env myos-buildenv
+Windows (PowerShell): docker run --rm -it -v "${pwd}:/root/env" myos-buildenv
+
+Make the thingy:
+
+make build-x86_64
+exit
+
+Test the OS:
+
+qemu-system-x86_64 -cdrom dist/x86_64/kernel.iso
