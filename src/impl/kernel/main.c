@@ -1,6 +1,9 @@
 #include "print.h"
 #include "keyboard.h"
 #include "x86_64/rtc.h"
+#include "x86_64/port.h"
+#include "disk-test.h"
+#include "itoa.h"
 
 #define KEY_CODE_A 0x1E
 #define KEY_CODE_B 0x30
@@ -30,6 +33,10 @@
 #define KEY_CODE_Z 0x2C
 #define KEY_CODE_SPACE 0x39
 #define KEY_CODE_ENTER 0x1C
+
+// src/impl/kernel/main.c
+void test_function(void);
+void disktest_function(void);
 
 char to_ascii(uint16_t code) {
     switch (code) {
@@ -66,6 +73,27 @@ char to_ascii(uint16_t code) {
     return '?';
 }
 
+void disktest2_function(void) {
+    uint16_t buffer[256];    // 512 bytes
+    char buf[21];
+
+    // read sector 0 here (pseudo-code, implement disk_read_sector)
+    disk_read_sector(0, buffer);
+
+    uint16_t bytes_per_sector = buffer[11] | (buffer[12] << 8);
+    uint8_t sectors_per_cluster = buffer[13];
+
+    utoa(bytes_per_sector, buf);
+    print_str("Bytes per sector: ");
+    print_str(buf);
+    print_str("\n");
+
+    utoa(sectors_per_cluster, buf);
+    print_str("Sectors per cluster: ");
+    print_str(buf);
+    print_str("\n");
+}
+
 void handle_input(struct KeyboardEvent event) {
     if (event.type == KEYBOARD_EVENT_TYPE_MAKE) {
         print_set_color(PRINT_COLOR_WHITE, PRINT_COLOR_BLACK);
@@ -84,7 +112,10 @@ void kernel_main() {
 	print_str("Initialising keyboard...\n");
 	keyboard_init();
 	keyboard_set_handler(handle_input);
-	print_str("WELCOME!");
+	print_str("Disk shenanigans...");
+	disktest2_function();
+	bootsect_dump();
+	print_str("WELCOME!\n");
         uint8_t prev_seconds = 0;
     
     for (uint8_t i = 0; i < 5;) {
@@ -109,5 +140,33 @@ void test_function() {
 
 	print_str("The test module was initialised correctly\n");
 
+}
+
+
+void bootsect_dump(void) {
+    uint8_t buffer[512];   // One sector
+    char hex[17];          // 16 hex digits + null
+
+    // Read sector 0 (boot sector) from disk
+    disk_read_sector(0, buffer);
+
+    print_str("Boot Sector (Hex Dump):\n");
+
+    // Print 16 bytes per line
+    for (int i = 0; i < 512; i++) {
+        utoa_hex(buffer[i], hex);   // Convert byte to hex string
+
+        // If single digit, add a leading 0 for readability
+        if (buffer[i] < 16) {
+            print_str("0");
+        }
+        print_str(hex);
+        print_str(" ");
+
+        // New line every 16 bytes
+        if ((i + 1) % 16 == 0) {
+            print_str("\n");
+        }
+    }
 }
 
