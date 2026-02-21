@@ -4,6 +4,7 @@
 #include "x86_64/port.h"
 #include "disk-test.h"
 #include "itoa.h"
+#include "fat.h"
 
 #define KEY_CODE_A 0x1E
 #define KEY_CODE_B 0x30
@@ -37,7 +38,8 @@
 // src/impl/kernel/main.c
 void test_function(void);
 void disktest_function(void);
-
+// at top of your kernel file or in fat.h
+fat_info_t fat;
 char to_ascii(uint16_t code) {
     switch (code) {
         case KEY_CODE_A: return 'A';
@@ -73,6 +75,29 @@ char to_ascii(uint16_t code) {
     return '?';
 }
 
+void filename_to_83(const char* input, char out[11]) {
+    int i = 0, j = 0;
+    for (i = 0; i < 11; i++) out[i] = ' '; // fill with spaces
+
+    i = 0;
+    j = 0;
+    while (input[i] && j < 11) {
+        if (input[i] == '.') {
+            j = 8; // extension starts at byte 8
+            i++;
+            continue;
+        }
+        out[j++] = toupper(input[i++]);
+    }
+}
+
+void cat_file_simple(const char* name) {
+    char filename83[11];
+    filename_to_83(name, filename83); // converts "TEST.TXT" -> "TEST    TXT"
+
+    cat_file(filename83, &fat);
+}
+
 void disktest2_function(void) {
     uint16_t buffer[256];    // 512 bytes
     char buf[21];
@@ -102,47 +127,6 @@ void handle_input(struct KeyboardEvent event) {
     }
 }
 
-void kernel_main() {
-
-	print_clear();
-	print_set_color(PRINT_COLOR_BLUE, PRINT_COLOR_BLACK);
-	print_str("OuterOS - The successor to WOXOS\n");
-	print_str("Initialising modules...\n");
-	test_function();
-	print_str("Initialising keyboard...\n");
-	keyboard_init();
-	keyboard_set_handler(handle_input);
-	print_str("Disk shenanigans...");
-	disktest2_function();
-	bootsect_dump();
-	print_str("WELCOME!\n");
-        uint8_t prev_seconds = 0;
-    
-    for (uint8_t i = 0; i < 5;) {
-        uint8_t seconds = rtc_seconds();
-        
-        if (seconds != prev_seconds) {
-            i++;
-            print_set_color(PRINT_COLOR_GREEN, PRINT_COLOR_BLACK);
-            print_str("\nSeconds: ");
-            print_uint64_dec(seconds);
-        }
-        
-        prev_seconds = seconds;
-    }
-    
-    print_str(" - Seconds loop disabled.\n");
-    
-    while (1);
-}
-
-void test_function() {
-
-	print_str("The test module was initialised correctly\n");
-
-}
-
-
 void bootsect_dump(void) {
     uint8_t buffer[512];   // One sector
     char hex[17];          // 16 hex digits + null
@@ -169,4 +153,48 @@ void bootsect_dump(void) {
         }
     }
 }
+
+void kernel_main() {
+
+	print_clear();
+	print_set_color(PRINT_COLOR_BLUE, PRINT_COLOR_BLACK);
+	print_str("OuterOS - The successor to WOXOS\n");
+	print_str("Initialising modules...\n");
+	test_function();
+	print_str("Initialising keyboard...\n");
+	keyboard_init();
+	keyboard_set_handler(handle_input);
+	print_str("Disk shenanigans...");
+	disktest2_function();
+	bootsect_dump();
+	print_str("WELCOME!\n");
+	cat_file_simple("TEST    TXT");
+        uint8_t prev_seconds = 0;
+    
+    for (uint8_t i = 0; i < 1;) {
+        uint8_t seconds = rtc_seconds();
+        
+        if (seconds != prev_seconds) {
+            i++;
+            print_set_color(PRINT_COLOR_GREEN, PRINT_COLOR_BLACK);
+            print_str("\nSeconds: ");
+            print_uint64_dec(seconds);
+        }
+        
+        prev_seconds = seconds;
+    }
+    
+    print_str(" - Seconds loop disabled.\n");
+    
+    while (1);
+}
+
+void test_function() {
+
+	print_str("The test module was initialised correctly\n");
+
+}
+
+
+
 
