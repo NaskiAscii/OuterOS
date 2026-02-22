@@ -39,7 +39,7 @@
 void test_function(void);
 void disktest_function(void);
 // at top of your kernel file or in fat.h
-fat_info_t fat;
+//fat_info_t fat;
 char to_ascii(uint16_t code) {
     switch (code) {
         case KEY_CODE_A: return 'A';
@@ -75,7 +75,7 @@ char to_ascii(uint16_t code) {
     return '?';
 }
 
-void filename_to_83(const char* input, char out[11]) {
+/*void filename_to_83(const char* input, char out[11]) {
     int i = 0, j = 0;
     for (i = 0; i < 11; i++) out[i] = ' '; // fill with spaces
 
@@ -96,7 +96,7 @@ void cat_file_simple(const char* name) {
     filename_to_83(name, filename83); // converts "TEST.TXT" -> "TEST    TXT"
 
     cat_file(filename83, &fat);
-}
+}*/
 
 void disktest2_function(void) {
     uint16_t buffer[256];    // 512 bytes
@@ -164,11 +164,13 @@ void kernel_main() {
 	print_str("Initialising keyboard...\n");
 	keyboard_init();
 	keyboard_set_handler(handle_input);
-	print_str("Disk shenanigans...");
+	print_str("Initialising disk...\n");
 	disktest2_function();
-	bootsect_dump();
+	//bootsect_dump();
+	fat16_init();
 	print_str("WELCOME!\n");
-	cat_file_simple("TEST    TXT");
+	fat16_cat("TEST.TXT");
+	fat16_cat("MOTD.TXT");
         uint8_t prev_seconds = 0;
     
     for (uint8_t i = 0; i < 1;) {

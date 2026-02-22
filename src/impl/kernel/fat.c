@@ -1,4 +1,5 @@
 #include "fat.h"
+#include "print.h"
 
 #define DIR_ENTRY_SIZE 32
 #define ATTR_VOLUME_ID 0x08
