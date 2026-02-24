@@ -171,6 +171,8 @@ void kernel_main() {
 	print_str("WELCOME!\n");
 	fat16_cat("TEST.TXT");
 	fat16_cat("MOTD.TXT");
+	load_program("TEST.TXT");
+	jump_to_program();
         uint8_t prev_seconds = 0;
     
     for (uint8_t i = 0; i < 1;) {

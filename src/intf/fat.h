@@ -12,3 +12,5 @@ typedef struct {
 
 int fat16_init();
 int fat16_cat(const char* filename);
+int load_program(const char* filename);
+void jump_to_program();

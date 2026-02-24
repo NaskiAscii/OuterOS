@@ -7,8 +7,8 @@ x86_64_c_object_files := $(patsubst src/impl/x86_64/%.c, build/x86_64/%.o, $(x86
 x86_64_asm_source_files := $(shell find src/impl/x86_64 -name *.asm)
 x86_64_asm_object_files := $(patsubst src/impl/x86_64/%.asm, build/x86_64/%.o, $(x86_64_asm_source_files))
 
-boot_source := src/impl/x86_64/boot/header.asm src/impl/x86_64/boot/main.asm src/impl/x86_64/boot/main64.asm
-boot_object_files := $(patsubst src/impl/x86_64/boot/%.asm, build/x86_64/boot/%.o, $(boot_source))
+#boot_source := src/impl/x86_64/boot/header.asm src/impl/x86_64/boot/main.asm src/impl/x86_64/boot/main64.asm
+#boot_object_files := $(patsubst src/impl/x86_64/boot/%.asm, build/x86_64/boot/%.o, $(boot_source))
 
 x86_64_object_files := $(x86_64_c_object_files) $(x86_64_asm_object_files) $(boot_object_files)
 
