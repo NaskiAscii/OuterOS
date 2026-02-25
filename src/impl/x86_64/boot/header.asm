@@ -23,15 +23,18 @@ header_start:
     dd header_end - header_start ; header length
     dd 0x100000000 - (0xe85250d6 + 0 + (header_end - header_start)) ;checksum
 
-    ; Multiboot2 framebuffer request tag
-    ;dw 5     ; type = framebuffer request
-    ;dw 0     ; flags = 0
-    ;dd 20    ; size of this tag
-    ;dd 1024  ; width
-    ;dd 768   ; height
-    ;dd 32     ; depth (bpp)
+framebuffer_tag_start:
+    align 8
+    dw  0x05    ;Type: framebuffer
+    dw  0x01    ;Optional tag
+    dd  framebuffer_tag_end - framebuffer_tag_start ;size
+    dd  0   ;Width - if 0 we let the bootloader decide
+    dd  0   ;Height - same as above
+    dd  0   ;Depth  - same as above
+framebuffer_tag_end:
 
     ; terminating tag
+    align 8
     dw 0
     dw 0
     dd 8
